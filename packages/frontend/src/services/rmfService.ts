@@ -1,5 +1,23 @@
 import { RMFData } from '../types/rmf';
 
+// ฟังก์ชันสำหรับตรวจสอบว่ากองทุนเป็น RMF หรือไม่
+const isRMF = (rawFund: any): boolean => {
+  // ตรวจสอบจาก taxAllowance
+  if (rawFund.taxAllowance === 'RMF') {
+    return true;
+  }
+  
+  // ตรวจสอบจากชื่อกองทุน (backup)
+  const name = (rawFund.overviewInfo?.name || '').toLowerCase();
+  const symbol = (rawFund.overviewInfo?.symbol || '').toLowerCase();
+  
+  if (name.includes('rmf') || symbol.includes('rmf')) {
+    return true;
+  }
+  
+  return false;
+};
+
 // ฟังก์ชันสำหรับแปลงข้อมูลให้ตรงกับ interface
 const transformFundData = (rawFund: any): RMFData => {
   const overview = rawFund.overviewInfo || {};
@@ -32,52 +50,120 @@ const transformFundData = (rawFund: any): RMFData => {
   const trusteeFee = parseFloat(fee.actualTrusteeFee) || 0;
   const totalExpenseRatio = managementFee + trusteeFee;
 
-  // ฟังก์ชันวิเคราะห์หมวดหมู่กองทุนจากชื่อ
+  // ฟังก์ชันวิเคราะห์หมวดหมู่กองทุน RMF จากชื่อ
   function inferCategory(name: string, symbol: string): string {
     const n = (name || '').toLowerCase();
     const s = (symbol || '').toLowerCase();
 
-    // International/Global funds
-    if (/global|world|inter|international/.test(n)) return 'Global';
-    if (/usa|us|america/.test(n) || /usa|us/.test(s)) return 'USA';
-    if (/emerging|em|ตลาดเกิดใหม่/.test(n)) return 'Emerging Markets';
-    if (/china|จีน/.test(n)) return 'China';
-    if (/japan|ญี่ปุ่น/.test(n)) return 'Japan';
-    if (/europe|eu/.test(n)) return 'Europe';
-
-    // Fixed Income funds
-    if (/fixed income|ตราสารหนี้|bond|debt/.test(n)) return 'Fixed Income';
-    if (/money market|ตลาดเงิน/.test(n)) return 'Money Market';
-
-    // Equity funds
-    if (/equity|หุ้น|stock/.test(n)) return 'Equity';
-    if (/set|ตลาดหลักทรัพย์/.test(n)) return 'SET Index';
-    if (/thai|ไทย/.test(n)) return 'Thai Equity';
-
-    // Mixed funds
-    if (/mixed|ผสม|balanced/.test(n)) return 'Mixed Fund';
-    if (/flexible|ยืดหยุ่น/.test(n)) return 'Flexible Fund';
-
-    // Property funds
-    if (/property|อสังหา|real estate/.test(n)) return 'Property';
-    if (/reit|real estate investment trust/.test(n)) return 'REIT';
-
-    // Sector funds
-    if (/technology|tech/.test(n)) return 'Technology';
-    if (/healthcare|medical/.test(n)) return 'Healthcare';
-    if (/energy|พลังงาน/.test(n)) return 'Energy';
-    if (/financial|การเงิน/.test(n)) return 'Financial';
-    if (/consumer|บริโภค/.test(n)) return 'Consumer';
-
-    // Alternative investments
-    if (/commodity|สินค้าโภคภัณฑ์/.test(n)) return 'Commodity';
-    if (/infrastructure|โครงสร้างพื้นฐาน/.test(n)) return 'Infrastructure';
-
-    // Default categories based on common patterns
-    if (/rmf|retirement/.test(n)) return 'RMF Fund';
-    if (/ssf|super/.test(n)) return 'SSF Fund';
-
-    return 'Other';
+    // หมวดหมู่หลักของ RMF ตามประกาศ ก.ล.ต.
+    
+    // กองทุนรวมหุ้นไทย (Thai Equity)
+    if (/หุ้นไทย|thai equity|thai stock|set|ตลาดหลักทรัพย์|หุ้นในประเทศ/.test(n)) {
+      return 'หุ้นไทย';
+    }
+    
+    // กองทุนรวมหุ้นต่างประเทศ (Foreign Equity)
+    if (/หุ้นต่างประเทศ|foreign equity|global equity|world equity|international equity|หุ้นโลก/.test(n)) {
+      return 'หุ้นต่างประเทศ';
+    }
+    
+    // กองทุนรวมหุ้นสหรัฐอเมริกา (US Equity)
+    if (/หุ้นสหรัฐ|หุ้นอเมริกา|us equity|usa equity|american equity|หุ้นอเมริกัน/.test(n)) {
+      return 'หุ้นสหรัฐอเมริกา';
+    }
+    
+    // กองทุนรวมหุ้นจีน (China Equity)
+    if (/หุ้นจีน|china equity|chinese equity|หุ้นประเทศจีน/.test(n)) {
+      return 'หุ้นจีน';
+    }
+    
+    // กองทุนรวมหุ้นญี่ปุ่น (Japan Equity)
+    if (/หุ้นญี่ปุ่น|japan equity|japanese equity|หุ้นประเทศญี่ปุ่น/.test(n)) {
+      return 'หุ้นญี่ปุ่น';
+    }
+    
+    // กองทุนรวมหุ้นยุโรป (Europe Equity)
+    if (/หุ้นยุโรป|europe equity|european equity|หุ้นประเทศยุโรป/.test(n)) {
+      return 'หุ้นยุโรป';
+    }
+    
+    // กองทุนรวมหุ้นตลาดเกิดใหม่ (Emerging Markets)
+    if (/หุ้นตลาดเกิดใหม่|emerging markets|emerging equity|หุ้นประเทศกำลังพัฒนา/.test(n)) {
+      return 'หุ้นตลาดเกิดใหม่';
+    }
+    
+    // กองทุนรวมตราสารหนี้ (Fixed Income)
+    if (/ตราสารหนี้|fixed income|bond|debt|พันธบัตร|หุ้นกู้/.test(n)) {
+      return 'ตราสารหนี้';
+    }
+    
+    // กองทุนรวมตลาดเงิน (Money Market)
+    if (/ตลาดเงิน|money market|เงินฝาก|deposit/.test(n)) {
+      return 'ตลาดเงิน';
+    }
+    
+    // กองทุนรวมผสม (Mixed Fund)
+    if (/ผสม|mixed|balanced|สมดุล|ผสมหุ้นและตราสารหนี้/.test(n)) {
+      return 'กองทุนรวมผสม';
+    }
+    
+    // กองทุนรวมยืดหยุ่น (Flexible Fund)
+    if (/ยืดหยุ่น|flexible|ปรับตัว|ปรับสัดส่วน/.test(n)) {
+      return 'กองทุนรวมยืดหยุ่น';
+    }
+    
+    // กองทุนรวมอสังหาริมทรัพย์ (Property)
+    if (/อสังหา|property|real estate|ที่ดิน|อาคาร/.test(n)) {
+      return 'อสังหาริมทรัพย์';
+    }
+    
+    // กองทุนรวมโครงสร้างพื้นฐาน (Infrastructure)
+    if (/โครงสร้างพื้นฐาน|infrastructure|สาธารณูปโภค|พลังงาน|คมนาคม/.test(n)) {
+      return 'โครงสร้างพื้นฐาน';
+    }
+    
+    // กองทุนรวมสินค้าโภคภัณฑ์ (Commodity)
+    if (/สินค้าโภคภัณฑ์|commodity|ทองคำ|ทอง|ทองคำขาว|น้ำมัน/.test(n)) {
+      return 'สินค้าโภคภัณฑ์';
+    }
+    
+    // กองทุนรวมเทคโนโลยี (Technology)
+    if (/เทคโนโลยี|technology|tech|ดิจิทัล|digital|ai|artificial intelligence/.test(n)) {
+      return 'เทคโนโลยี';
+    }
+    
+    // กองทุนรวมการเงิน (Financial)
+    if (/การเงิน|financial|ธนาคาร|banking|ประกัน|insurance/.test(n)) {
+      return 'การเงิน';
+    }
+    
+    // กองทุนรวมบริโภค (Consumer)
+    if (/บริโภค|consumer|อาหาร|เครื่องดื่ม|retail|ค้าปลีก/.test(n)) {
+      return 'บริโภค';
+    }
+    
+    // กองทุนรวมพลังงาน (Energy)
+    if (/พลังงาน|energy|น้ำมัน|gas|ไฟฟ้า|พลังงานทดแทน/.test(n)) {
+      return 'พลังงาน';
+    }
+    
+    // กองทุนรวมสุขภาพ (Healthcare)
+    if (/สุขภาพ|healthcare|medical|ยา|โรงพยาบาล|biotech/.test(n)) {
+      return 'สุขภาพ';
+    }
+    
+    // กองทุนรวม REIT (Real Estate Investment Trust)
+    if (/reit|real estate investment trust/.test(n)) {
+      return 'REIT';
+    }
+    
+    // กองทุนรวมตลาดเงิน (Money Market) - รอง
+    if (/เงินฝาก|deposit|ตลาดเงิน|money/.test(n)) {
+      return 'ตลาดเงิน';
+    }
+    
+    // Default สำหรับ RMF ที่ไม่สามารถระบุหมวดหมู่ได้
+    return 'กองทุนรวมเพื่อการเลี้ยงชีพ';
   }
 
   return {
@@ -132,11 +218,37 @@ export const loadRMFData = async (): Promise<RMFData[]> => {
       throw new Error('Invalid data format: expected non-empty array');
     }
 
-    // แปลงข้อมูลให้ตรงกับ interface
-    const funds = rawFunds.map(transformFundData);
+    // กรองเฉพาะกองทุน RMF
+    const rmfFunds = rawFunds.filter(isRMF);
+    
+    console.log(`Total funds: ${rawFunds.length}`);
+    console.log(`RMF funds: ${rmfFunds.length}`);
+    console.log(`Non-RMF funds filtered out: ${rawFunds.length - rmfFunds.length}`);
+    
+    // Debug: แสดงตัวอย่างกองทุนที่ไม่ผ่านการกรอง
+    if (rmfFunds.length === 0) {
+      console.log('No RMF funds found! Debugging...');
+      console.log('Sample of first 5 funds:');
+      rawFunds.slice(0, 5).forEach((fund, index) => {
+        console.log(`Fund ${index + 1}:`, {
+          name: fund.overviewInfo?.name,
+          symbol: fund.overviewInfo?.symbol,
+          taxAllowance: fund.taxAllowance,
+          isRMF: isRMF(fund)
+        });
+      });
+      
+      // Fallback: ถ้าไม่พบ RMF ให้ใช้กองทุนทั้งหมด
+      console.log('Using all funds as fallback...');
+      const funds = rawFunds.map(transformFundData);
+      return funds;
+    }
 
-    console.log('Transformed funds:', funds);
-    console.log('First transformed fund:', funds[0]);
+    // แปลงข้อมูลให้ตรงกับ interface
+    const funds = rmfFunds.map(transformFundData);
+
+    console.log('Transformed RMF funds:', funds);
+    console.log('First transformed RMF fund:', funds[0]);
 
     return funds;
   } catch (error) {
