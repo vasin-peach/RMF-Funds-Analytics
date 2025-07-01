@@ -22,32 +22,38 @@ RMF/
 ## การติดตั้ง
 
 ### ข้อกำหนดเบื้องต้น
-- Node.js 18+ 
+
+- Node.js 18+
 - pnpm 8+
 
 ### ขั้นตอนการติดตั้ง
 
 1. ติดตั้ง pnpm (หากยังไม่มี):
+
 ```bash
 npm install -g pnpm
 ```
 
 2. ติดตั้ง dependencies ทั้งหมด:
+
 ```bash
 pnpm install
 ```
 
 3. รัน development server:
+
 ```bash
 pnpm dev
 ```
 
 4. Build สำหรับ production:
+
 ```bash
 pnpm build
 ```
 
 5. ล้าง cache และ node_modules:
+
 ```bash
 pnpm clean
 ```
@@ -57,6 +63,7 @@ pnpm clean
 **สำคัญ**: ไฟล์ `jsonformatter.json` ต้องอยู่ใน `packages/frontend/public/data/` เพื่อให้ Vite สามารถ serve ไฟล์ได้
 
 โครงสร้างข้อมูล JSON ที่ต้องการ:
+
 ```json
 [
   {
@@ -146,4 +153,4 @@ pnpm build
 
 # Preview build
 pnpm --filter @rmf/frontend preview
-``` 
+```

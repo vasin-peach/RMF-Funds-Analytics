@@ -49,4 +49,4 @@ export interface FilterOption {
   company?: string;
   risk?: string;
   minInvestment?: number;
-} 
+}

@@ -7,8 +7,13 @@ const transformFundData = (rawFund: any): RMFData => {
   const fee = rawFund.feeInfo || {};
 
   // Map risk level to English
-  const getRiskText = (riskLevel: string): 'Low' | 'Low to Moderate' | 'Moderate' | 'Moderate to High' | 'High' => {
-    const riskMap: Record<string, 'Low' | 'Low to Moderate' | 'Moderate' | 'Moderate to High' | 'High'> = {
+  const getRiskText = (
+    riskLevel: string
+  ): 'Low' | 'Low to Moderate' | 'Moderate' | 'Moderate to High' | 'High' => {
+    const riskMap: Record<
+      string,
+      'Low' | 'Low to Moderate' | 'Moderate' | 'Moderate to High' | 'High'
+    > = {
       '1': 'Low',
       '2': 'Low',
       '3': 'Low to Moderate',
@@ -18,7 +23,7 @@ const transformFundData = (rawFund: any): RMFData => {
       '7': 'Moderate to High',
       '8': 'Moderate to High',
       '9': 'High',
-      '10': 'High'
+      '10': 'High',
     };
     return riskMap[riskLevel] || 'Moderate';
   };
@@ -31,7 +36,7 @@ const transformFundData = (rawFund: any): RMFData => {
   function inferCategory(name: string, symbol: string): string {
     const n = (name || '').toLowerCase();
     const s = (symbol || '').toLowerCase();
-    
+
     // International/Global funds
     if (/global|world|inter|international/.test(n)) return 'Global';
     if (/usa|us|america/.test(n) || /usa|us/.test(s)) return 'USA';
@@ -39,39 +44,39 @@ const transformFundData = (rawFund: any): RMFData => {
     if (/china|จีน/.test(n)) return 'China';
     if (/japan|ญี่ปุ่น/.test(n)) return 'Japan';
     if (/europe|eu/.test(n)) return 'Europe';
-    
+
     // Fixed Income funds
     if (/fixed income|ตราสารหนี้|bond|debt/.test(n)) return 'Fixed Income';
     if (/money market|ตลาดเงิน/.test(n)) return 'Money Market';
-    
+
     // Equity funds
     if (/equity|หุ้น|stock/.test(n)) return 'Equity';
     if (/set|ตลาดหลักทรัพย์/.test(n)) return 'SET Index';
     if (/thai|ไทย/.test(n)) return 'Thai Equity';
-    
+
     // Mixed funds
     if (/mixed|ผสม|balanced/.test(n)) return 'Mixed Fund';
     if (/flexible|ยืดหยุ่น/.test(n)) return 'Flexible Fund';
-    
+
     // Property funds
     if (/property|อสังหา|real estate/.test(n)) return 'Property';
     if (/reit|real estate investment trust/.test(n)) return 'REIT';
-    
+
     // Sector funds
     if (/technology|tech/.test(n)) return 'Technology';
     if (/healthcare|medical/.test(n)) return 'Healthcare';
     if (/energy|พลังงาน/.test(n)) return 'Energy';
     if (/financial|การเงิน/.test(n)) return 'Financial';
     if (/consumer|บริโภค/.test(n)) return 'Consumer';
-    
+
     // Alternative investments
     if (/commodity|สินค้าโภคภัณฑ์/.test(n)) return 'Commodity';
     if (/infrastructure|โครงสร้างพื้นฐาน/.test(n)) return 'Infrastructure';
-    
+
     // Default categories based on common patterns
     if (/rmf|retirement/.test(n)) return 'RMF Fund';
     if (/ssf|super/.test(n)) return 'SSF Fund';
-    
+
     return 'Other';
   }
 

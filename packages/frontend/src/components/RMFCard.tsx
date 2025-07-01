@@ -1,13 +1,11 @@
 import React from 'react';
 import { RMFData } from '../types/rmf';
 import {
-  formatNumber,
   formatPercentage,
   formatCurrency,
   formatFundSize,
   getRiskColor,
   getReturnColor,
-  calculateValueScore,
 } from '../utils/rmfUtils';
 import { TrendingUp, TrendingDown, Minus, Star } from 'lucide-react';
 import { Radar } from 'react-chartjs-2';
@@ -38,12 +36,6 @@ interface RMFCardProps {
   radar?: { pastNorm: number; sharpeNorm: number; drawdownNorm: number };
   maxValueScore?: number;
 }
-
-// ฟังก์ชัน normalize array (min-max)
-const normalize = (value: number, min: number, max: number) => {
-  if (max === min) return 0.5;
-  return (value - min) / (max - min);
-};
 
 // RadarChart inline component
 const RadarChart: React.FC<{
@@ -96,18 +88,6 @@ const RadarChart: React.FC<{
     </div>
   );
 };
-
-// Helper to convert normalized score to qualitative level
-function getLevelLabel(norm: number) {
-  if (norm >= 0.7) return 'High';
-  if (norm >= 0.4) return 'Moderate';
-  return 'Low';
-}
-function getExpenseLabel(expense: number) {
-  if (expense <= 0.5) return 'Low';
-  if (expense <= 1) return 'Moderate';
-  return 'High';
-}
 
 const RMFCard: React.FC<RMFCardProps> = ({
   fund,
@@ -170,12 +150,6 @@ const RMFCard: React.FC<RMFCardProps> = ({
         return risk;
     }
   };
-
-  // Recommendation reason
-  let reason = '';
-  if (radar) {
-    reason = `Recommended because: ${getLevelLabel(radar.pastNorm)} past performance, ${getLevelLabel(radar.sharpeNorm)} risk-adjusted return, ${getLevelLabel(radar.drawdownNorm)} drawdown, and ${getExpenseLabel(fund.expenseRatio)} expense ratio.`;
-  }
 
   return (
     <div className="card bg-white shadow-md hover:shadow-lg transition-all duration-200 border border-gray-200 rounded-lg overflow-hidden">

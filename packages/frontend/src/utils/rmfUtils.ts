@@ -1,10 +1,8 @@
-import { RMFData, RMFComparisonCriteria, SortOption, FilterOption } from '../types/rmf';
+import { RMFData, SortOption, FilterOption } from '../types/rmf';
 
 // คำนวณค่าเฉลี่ยถ่วงน้ำหนักของผลตอบแทนย้อนหลัง
 const weightedAvgReturn = (fund: RMFData) => {
-  return (
-    (fund.return1Y * 0.4 + fund.return3Y * 0.35 + fund.return5Y * 0.25)
-  );
+  return fund.return1Y * 0.4 + fund.return3Y * 0.35 + fund.return5Y * 0.25;
 };
 
 // คำนวณ Sharpe Ratio แบบง่าย (Risk Adjusted Return)
@@ -12,7 +10,10 @@ const calcSharpe = (fund: RMFData) => {
   const returns = [fund.return1Y, fund.return3Y, fund.return5Y];
   const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
   const riskFree = 1; // สมมติ
-  const std = Math.sqrt(returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length) || 1;
+  const std =
+    Math.sqrt(
+      returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length
+    ) || 1;
   return (mean - riskFree) / std;
 };
 
@@ -28,11 +29,15 @@ const normalize = (value: number, min: number, max: number) => {
 };
 
 // คำนวณความคุ้มค่าของกองทุน (ใหม่)
-export const calculateValueScore = (fund: RMFData, allFunds?: RMFData[]): number => {
+export const calculateValueScore = (
+  fund: RMFData,
+  allFunds?: RMFData[]
+): number => {
   // ถ้าผลตอบแทนย้อนหลังติดลบทั้งหมด หรือ past performance < 0 ไม่ควรแนะนำ
   const returns = [fund.return1Y, fund.return3Y, fund.return5Y];
-  const pastPerformance = (fund.return1Y * 0.4 + fund.return3Y * 0.35 + fund.return5Y * 0.25);
-  if (returns.every(r => r < 0) || pastPerformance < 0) {
+  const pastPerformance =
+    fund.return1Y * 0.4 + fund.return3Y * 0.35 + fund.return5Y * 0.25;
+  if (returns.every((r) => r < 0) || pastPerformance < 0) {
     return 0;
   }
   // เตรียมข้อมูล normalize
@@ -42,9 +47,23 @@ export const calculateValueScore = (fund: RMFData, allFunds?: RMFData[]): number
   const sharpes = all.map(calcSharpe);
   const drawdowns = all.map(calcMaxDrawdown);
 
-  const pastNorm = normalize(weightedAvgReturn(fund), Math.min(...pasts), Math.max(...pasts));
-  const sharpeNorm = normalize(calcSharpe(fund), Math.min(...sharpes), Math.max(...sharpes));
-  const drawdownNorm = 1 - normalize(calcMaxDrawdown(fund), Math.min(...drawdowns), Math.max(...drawdowns)); // drawdown ยิ่งน้อยยิ่งดี
+  const pastNorm = normalize(
+    weightedAvgReturn(fund),
+    Math.min(...pasts),
+    Math.max(...pasts)
+  );
+  const sharpeNorm = normalize(
+    calcSharpe(fund),
+    Math.min(...sharpes),
+    Math.max(...sharpes)
+  );
+  const drawdownNorm =
+    1 -
+    normalize(
+      calcMaxDrawdown(fund),
+      Math.min(...drawdowns),
+      Math.max(...drawdowns)
+    ); // drawdown ยิ่งน้อยยิ่งดี
 
   // รวมคะแนน (น้ำหนักเท่าๆ กัน)
   const score = (pastNorm + sharpeNorm + drawdownNorm) / 3;
@@ -58,11 +77,11 @@ export const calculateValueScore = (fund: RMFData, allFunds?: RMFData[]): number
 // แปลงระดับความเสี่ยงเป็นตัวเลข
 export const getRiskScore = (risk: string): number => {
   const riskMap: Record<string, number> = {
-    'ต่ำ': 1,
-    'ต่ำถึงปานกลาง': 2,
-    'ปานกลาง': 3,
-    'ปานกลางถึงสูง': 4,
-    'สูง': 5
+    ต่ำ: 1,
+    ต่ำถึงปานกลาง: 2,
+    ปานกลาง: 3,
+    ปานกลางถึงสูง: 4,
+    สูง: 5,
   };
   return riskMap[risk] || 3;
 };
@@ -70,24 +89,34 @@ export const getRiskScore = (risk: string): number => {
 // จัดอันดับกองทุนตามความคุ้มค่า
 export const rankFundsByValue = (funds: RMFData[]): RMFData[] => {
   // คำนวณคะแนนของทุกกองทุนใน filteredFunds เพียงครั้งเดียว
-  const scored = funds.map(fund => ({ fund, score: calculateValueScore(fund, funds) }));
+  const scored = funds.map((fund) => ({
+    fund,
+    score: calculateValueScore(fund, funds),
+  }));
   scored.sort((a, b) => b.score - a.score);
-  return scored.map(s => s.fund);
+  return scored.map((s) => s.fund);
 };
 
 // กรองกองทุนตามเงื่อนไข
-export const filterFunds = (funds: RMFData[], filters: FilterOption): RMFData[] => {
-  return funds.filter(fund => {
+export const filterFunds = (
+  funds: RMFData[],
+  filters: FilterOption
+): RMFData[] => {
+  return funds.filter((fund) => {
     if (filters.category && fund.category !== filters.category) return false;
     if (filters.company && fund.company !== filters.company) return false;
     if (filters.risk && fund.risk !== filters.risk) return false;
-    if (filters.minInvestment && fund.minInvestment < filters.minInvestment) return false;
+    if (filters.minInvestment && fund.minInvestment < filters.minInvestment)
+      return false;
     return true;
   });
 };
 
 // เรียงลำดับกองทุน
-export const sortFunds = (funds: RMFData[], sortOption: SortOption): RMFData[] => {
+export const sortFunds = (
+  funds: RMFData[],
+  sortOption: SortOption
+): RMFData[] => {
   return [...funds].sort((a, b) => {
     let aValue: number | string;
     let bValue: number | string;
@@ -138,8 +167,8 @@ export const sortFunds = (funds: RMFData[], sortOption: SortOption): RMFData[] =
     }
 
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return sortOption.direction === 'asc' 
-        ? aValue.localeCompare(bValue) 
+      return sortOption.direction === 'asc'
+        ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     }
 
@@ -158,7 +187,7 @@ export const formatNumber = (num: number, decimals: number = 2): string => {
   }
   return new Intl.NumberFormat('th-TH', {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    maximumFractionDigits: decimals,
   }).format(num);
 };
 
@@ -178,7 +207,7 @@ export const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat('th-TH', {
     style: 'currency',
     currency: 'THB',
-    minimumFractionDigits: 2
+    minimumFractionDigits: 2,
   }).format(amount);
 };
 
@@ -199,11 +228,11 @@ export const formatFundSize = (size: number): string => {
 // สีสำหรับระดับความเสี่ยง
 export const getRiskColor = (risk: string): string => {
   const colorMap: Record<string, string> = {
-    'Low': 'text-green-600',
+    Low: 'text-green-600',
     'Low to Moderate': 'text-blue-600',
-    'Moderate': 'text-yellow-600',
+    Moderate: 'text-yellow-600',
     'Moderate to High': 'text-orange-600',
-    'High': 'text-red-600',
+    High: 'text-red-600',
   };
   return colorMap[risk] || 'text-gray-600';
 };

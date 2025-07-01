@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { RMFData, FilterOption, SortOption } from './types/rmf';
 import { loadRMFData, getUniqueValues } from './services/rmfService';
-import { filterFunds, sortFunds, rankFundsByValue, calculateValueScore, getRiskScore } from './utils/rmfUtils';
+import {
+  filterFunds,
+  sortFunds,
+  calculateValueScore,
+  getRiskScore,
+} from './utils/rmfUtils';
 import RMFCard from './components/RMFCard';
 import FilterPanel from './components/FilterPanel';
 import StatisticsPanel from './components/StatisticsPanel';
@@ -16,11 +21,11 @@ function App() {
   const [sortOption, setSortOption] = useState<SortOption>({
     label: 'ความคุ้มค่า (สูงสุด)',
     value: 'expenseRatio',
-    direction: 'desc'
+    direction: 'desc',
   });
   const [showValueRanking, setShowValueRanking] = useState(true);
   const [showGraphComparison, setShowGraphComparison] = useState(false);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [fundsPerPage] = useState(30);
@@ -71,19 +76,31 @@ function App() {
   const scoredFunds = useMemo(() => {
     if (filteredFunds.length === 0) return [];
     // Precompute all values for normalization
-    const pasts = filteredFunds.map(f => (f.return1Y * 0.4 + f.return3Y * 0.35 + f.return5Y * 0.25));
-    const sharpes = filteredFunds.map(f => {
+    const pasts = filteredFunds.map(
+      (f) => f.return1Y * 0.4 + f.return3Y * 0.35 + f.return5Y * 0.25
+    );
+    const sharpes = filteredFunds.map((f) => {
       const returns = [f.return1Y, f.return3Y, f.return5Y];
       const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
       const riskFree = 1;
-      const std = Math.sqrt(returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / returns.length) || 1;
+      const std =
+        Math.sqrt(
+          returns.reduce((a, b) => a + Math.pow(b - mean, 2), 0) /
+            returns.length
+        ) || 1;
       return (mean - riskFree) / std;
     });
-    const drawdowns = filteredFunds.map(f => Math.min(f.return1Y, f.return3Y, f.return5Y) * -1);
-    const minPast = Math.min(...pasts), maxPast = Math.max(...pasts);
-    const minSharpe = Math.min(...sharpes), maxSharpe = Math.max(...sharpes);
-    const minDraw = Math.min(...drawdowns), maxDraw = Math.max(...drawdowns);
-    const normalize = (v: number, min: number, max: number) => (max === min ? 0.5 : (v - min) / (max - min));
+    const drawdowns = filteredFunds.map(
+      (f) => Math.min(f.return1Y, f.return3Y, f.return5Y) * -1
+    );
+    const minPast = Math.min(...pasts),
+      maxPast = Math.max(...pasts);
+    const minSharpe = Math.min(...sharpes),
+      maxSharpe = Math.max(...sharpes);
+    const minDraw = Math.min(...drawdowns),
+      maxDraw = Math.max(...drawdowns);
+    const normalize = (v: number, min: number, max: number) =>
+      max === min ? 0.5 : (v - min) / (max - min);
     return filteredFunds.map((fund, idx) => {
       const past = pasts[idx];
       const sharpe = sharpes[idx];
@@ -93,13 +110,21 @@ function App() {
       const drawdownNorm = 1 - normalize(drawdown, minDraw, maxDraw);
       // Value score logic (same as calculateValueScore)
       const returns = [fund.return1Y, fund.return3Y, fund.return5Y];
-      if (returns.every(r => r < 0) || past < 0) {
-        return { fund, valueScore: 0, radar: { pastNorm, sharpeNorm, drawdownNorm } };
+      if (returns.every((r) => r < 0) || past < 0) {
+        return {
+          fund,
+          valueScore: 0,
+          radar: { pastNorm, sharpeNorm, drawdownNorm },
+        };
       }
       const score = (pastNorm + sharpeNorm + drawdownNorm) / 3;
       const expensePenalty = Math.min(0.2, (fund.expenseRatio || 0) / 10);
       const valueScore = Math.max(0, score - expensePenalty);
-      return { fund, valueScore, radar: { pastNorm, sharpeNorm, drawdownNorm } };
+      return {
+        fund,
+        valueScore,
+        radar: { pastNorm, sharpeNorm, drawdownNorm },
+      };
     });
   }, [filteredFunds]);
 
@@ -118,7 +143,13 @@ function App() {
   const pagedFunds = useMemo(() => {
     const arr = showValueRanking ? valueRankedFunds : scoredFunds;
     return arr.slice(indexOfFirstFund, indexOfLastFund);
-  }, [showValueRanking, valueRankedFunds, scoredFunds, indexOfFirstFund, indexOfLastFund]);
+  }, [
+    showValueRanking,
+    valueRankedFunds,
+    scoredFunds,
+    indexOfFirstFund,
+    indexOfLastFund,
+  ]);
 
   // เปลี่ยนหน้า
   const goToPage = (pageNumber: number) => {
@@ -127,12 +158,12 @@ function App() {
 
   // หน้าก่อนหน้า
   const goToPreviousPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1));
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
   // หน้าถัดไป
   const goToNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
   // หน้าก่อนหน้า
@@ -149,7 +180,7 @@ function App() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -177,12 +208,15 @@ function App() {
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
   // ก่อน render
-  const maxValueScore = filteredFunds.length > 0 ? Math.max(...filteredFunds.map(f => calculateValueScore(f))) : 1;
+  const maxValueScore =
+    filteredFunds.length > 0
+      ? Math.max(...filteredFunds.map((f) => calculateValueScore(f)))
+      : 1;
 
   if (loading) {
     return (
@@ -201,7 +235,7 @@ function App() {
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-error" />
           <p className="text-lg text-error">{error}</p>
-          <button 
+          <button
             className="btn btn-primary mt-4"
             onClick={() => window.location.reload()}
           >
@@ -295,26 +329,38 @@ function App() {
             /* Graph Comparison View */
             <div className="bg-white shadow-md border border-gray-200 rounded-lg p-6">
               <div className="flex items-center gap-2 mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Fund Comparison Chart</h3>
-                <span className="text-sm text-gray-500">({Math.min(10, pagedFunds.length)} funds shown)</span>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Fund Comparison Chart
+                </h3>
+                <span className="text-sm text-gray-500">
+                  ({Math.min(10, pagedFunds.length)} funds shown)
+                </span>
               </div>
-              
+
               {/* Comparison Metrics */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Expense Ratio Comparison */}
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Expense Ratio Comparison</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Expense Ratio Comparison
+                  </h4>
                   <div className="space-y-2">
                     {pagedFunds.slice(0, 10).map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="w-24 text-xs text-gray-600 truncate">{item.fund.fundCode}</div>
+                        <div className="w-24 text-xs text-gray-600 truncate">
+                          {item.fund.fundCode}
+                        </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-4">
-                          <div 
+                          <div
                             className="bg-red-500 h-4 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(100, (item.fund.expenseRatio / 2) * 100)}%` }}
+                            style={{
+                              width: `${Math.min(100, (item.fund.expenseRatio / 2) * 100)}%`,
+                            }}
                           ></div>
                         </div>
-                        <div className="w-16 text-xs font-medium text-right">{item.fund.expenseRatio.toFixed(2)}%</div>
+                        <div className="w-16 text-xs font-medium text-right">
+                          {item.fund.expenseRatio.toFixed(2)}%
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -322,22 +368,34 @@ function App() {
 
                 {/* 1Y Return Comparison */}
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">1Y Return Comparison</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    1Y Return Comparison
+                  </h4>
                   <div className="space-y-2">
                     {pagedFunds.slice(0, 10).map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="w-24 text-xs text-gray-600 truncate">{item.fund.fundCode}</div>
+                        <div className="w-24 text-xs text-gray-600 truncate">
+                          {item.fund.fundCode}
+                        </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-4">
-                          <div 
+                          <div
                             className={`h-4 rounded-full transition-all duration-300 ${
-                              item.fund.return1Y >= 0 ? 'bg-green-500' : 'bg-red-500'
+                              item.fund.return1Y >= 0
+                                ? 'bg-green-500'
+                                : 'bg-red-500'
                             }`}
-                            style={{ width: `${Math.min(100, Math.abs(item.fund.return1Y) * 2)}%` }}
+                            style={{
+                              width: `${Math.min(100, Math.abs(item.fund.return1Y) * 2)}%`,
+                            }}
                           ></div>
                         </div>
-                        <div className={`w-16 text-xs font-medium text-right ${
-                          item.fund.return1Y >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <div
+                          className={`w-16 text-xs font-medium text-right ${
+                            item.fund.return1Y >= 0
+                              ? 'text-green-600'
+                              : 'text-red-600'
+                          }`}
+                        >
                           {item.fund.return1Y.toFixed(2)}%
                         </div>
                       </div>
@@ -347,15 +405,21 @@ function App() {
 
                 {/* Fund Size Comparison */}
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Fund Size Comparison</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Fund Size Comparison
+                  </h4>
                   <div className="space-y-2">
                     {pagedFunds.slice(0, 10).map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="w-24 text-xs text-gray-600 truncate">{item.fund.fundCode}</div>
+                        <div className="w-24 text-xs text-gray-600 truncate">
+                          {item.fund.fundCode}
+                        </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-4">
-                          <div 
+                          <div
                             className="bg-blue-500 h-4 rounded-full transition-all duration-300"
-                            style={{ width: `${Math.min(100, (item.fund.fundSize / 1000000000) * 10)}%` }}
+                            style={{
+                              width: `${Math.min(100, (item.fund.fundSize / 1000000000) * 10)}%`,
+                            }}
                           ></div>
                         </div>
                         <div className="w-20 text-xs font-medium text-right">
@@ -368,18 +432,26 @@ function App() {
 
                 {/* Risk Level Comparison */}
                 <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Risk Level Comparison</h4>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Risk Level Comparison
+                  </h4>
                   <div className="space-y-2">
                     {pagedFunds.slice(0, 10).map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
-                        <div className="w-24 text-xs text-gray-600 truncate">{item.fund.fundCode}</div>
+                        <div className="w-24 text-xs text-gray-600 truncate">
+                          {item.fund.fundCode}
+                        </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-4">
-                          <div 
+                          <div
                             className="bg-purple-500 h-4 rounded-full transition-all duration-300"
-                            style={{ width: `${(getRiskScore(item.fund.risk) / 5) * 100}%` }}
+                            style={{
+                              width: `${(getRiskScore(item.fund.risk) / 5) * 100}%`,
+                            }}
                           ></div>
                         </div>
-                        <div className="w-20 text-xs font-medium text-right">{item.fund.risk}</div>
+                        <div className="w-20 text-xs font-medium text-right">
+                          {item.fund.risk}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -388,20 +460,33 @@ function App() {
 
               {/* Fund List */}
               <div className="mt-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Fund Details</h4>
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                  Fund Details
+                </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pagedFunds.slice(0, 10).map((item, index) => (
-                    <div key={index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                      <div className="text-xs font-semibold text-gray-800 mb-1">{item.fund.fundCode}</div>
-                      <div className="text-xs text-gray-600 mb-2">{item.fund.name}</div>
+                    <div
+                      key={index}
+                      className="bg-gray-50 p-3 rounded-lg border border-gray-200"
+                    >
+                      <div className="text-xs font-semibold text-gray-800 mb-1">
+                        {item.fund.fundCode}
+                      </div>
+                      <div className="text-xs text-gray-600 mb-2">
+                        {item.fund.name}
+                      </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
                           <span className="text-gray-500">Expense:</span>
-                          <span className="font-medium ml-1">{item.fund.expenseRatio.toFixed(2)}%</span>
+                          <span className="font-medium ml-1">
+                            {item.fund.expenseRatio.toFixed(2)}%
+                          </span>
                         </div>
                         <div>
                           <span className="text-gray-500">1Y Return:</span>
-                          <span className={`font-medium ml-1 ${item.fund.return1Y >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <span
+                            className={`font-medium ml-1 ${item.fund.return1Y >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                          >
                             {item.fund.return1Y.toFixed(2)}%
                           </span>
                         </div>
@@ -419,7 +504,11 @@ function App() {
                   <RMFCard
                     key={item.fund.id || `fund-${index}`}
                     fund={item.fund}
-                    rank={showValueRanking ? indexOfFirstFund + index + 1 : undefined}
+                    rank={
+                      showValueRanking
+                        ? indexOfFirstFund + index + 1
+                        : undefined
+                    }
                     showValueScore={showValueRanking}
                     valueScore={item.valueScore}
                     radar={item.radar}
@@ -451,7 +540,7 @@ function App() {
                   </button>
 
                   {/* Page Numbers */}
-                  {getPageNumbers().map((page, idx) => (
+                  {getPageNumbers().map((page, idx) =>
                     typeof page === 'number' ? (
                       <button
                         key={page}
@@ -461,9 +550,11 @@ function App() {
                         {page}
                       </button>
                     ) : (
-                      <span key={`ellipsis-${idx}`} className="px-2">...</span>
+                      <span key={`ellipsis-${idx}`} className="px-2">
+                        ...
+                      </span>
                     )
-                  ))}
+                  )}
 
                   {/* Next Page */}
                   <button
@@ -489,7 +580,9 @@ function App() {
               {/* Page Info */}
               <div className="text-center mt-4 text-gray-600">
                 <p>
-                  Showing {indexOfFirstFund + 1} - {Math.min(indexOfLastFund, filteredFunds.length)} of {filteredFunds.length} funds
+                  Showing {indexOfFirstFund + 1} -{' '}
+                  {Math.min(indexOfLastFund, filteredFunds.length)} of{' '}
+                  {filteredFunds.length} funds
                 </p>
                 <p className="text-sm">
                   Page {currentPage} of {totalPages}
@@ -501,9 +594,7 @@ function App() {
 
         {/* Footer */}
         <footer className="mt-16 text-center text-gray-600">
-          <p>
-            Last updated: {new Date().toLocaleDateString('en-US')}
-          </p>
+          <p>Last updated: {new Date().toLocaleDateString('en-US')}</p>
           <p className="mt-2 text-sm">
             * Past performance is not indicative of future results.
           </p>
@@ -513,4 +604,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

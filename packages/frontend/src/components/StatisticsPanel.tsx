@@ -1,26 +1,18 @@
 import React from 'react';
 import { RMFData } from '../types/rmf';
-import { formatNumber, formatPercentage, formatCurrency, formatFundSize } from '../utils/rmfUtils';
-import { BarChart3, TrendingUp, DollarSign, Users } from 'lucide-react';
+import { formatPercentage } from '../utils/rmfUtils';
 
 interface StatisticsPanelProps {
   funds: RMFData[];
 }
 
 const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
-  const totalFunds = funds.length;
-  const totalAssets = funds.reduce((sum, fund) => sum + fund.fundSize, 0);
-  const avgExpenseRatio = funds.reduce((sum, fund) => sum + fund.expenseRatio, 0) / totalFunds;
-  const avgReturn1Y = funds.reduce((sum, fund) => sum + fund.return1Y, 0) / totalFunds;
-  const avgReturn3Y = funds.reduce((sum, fund) => sum + fund.return3Y, 0) / totalFunds;
-  const avgReturn5Y = funds.reduce((sum, fund) => sum + fund.return5Y, 0) / totalFunds;
-
   const topPerformers = [...funds]
     .sort((a, b) => b.return1Y - a.return1Y)
     .slice(0, 5);
 
   const lowestExpense = [...funds]
-    .filter(fund => fund.expenseRatio > 0)
+    .filter((fund) => fund.expenseRatio > 0)
     .sort((a, b) => a.expenseRatio - b.expenseRatio)
     .slice(0, 5);
 
@@ -31,7 +23,10 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
         <h3 className="text-lg font-bold mb-4">Top Performers (1Y Return)</h3>
         <div className="space-y-3">
           {topPerformers.map((fund, index) => (
-            <div key={fund.id || `top-performer-${index}`} className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+            <div
+              key={fund.id || `top-performer-${index}`}
+              className="flex justify-between items-center p-3 bg-base-200 rounded-lg"
+            >
               <div className="flex items-center gap-3">
                 <div className="badge badge-primary">{index + 1}</div>
                 <div>
@@ -40,7 +35,9 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-bold text-success">{formatPercentage(fund.return1Y)}</div>
+                <div className="font-bold text-success">
+                  {formatPercentage(fund.return1Y)}
+                </div>
               </div>
             </div>
           ))}
@@ -53,7 +50,10 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
         {lowestExpense.length > 0 ? (
           <div className="space-y-3">
             {lowestExpense.map((fund, index) => (
-              <div key={fund.id || `lowest-expense-${index}`} className="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+              <div
+                key={fund.id || `lowest-expense-${index}`}
+                className="flex justify-between items-center p-3 bg-base-200 rounded-lg"
+              >
                 <div className="flex items-center gap-3">
                   <div className="badge badge-secondary">{index + 1}</div>
                   <div>
@@ -62,7 +62,9 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold text-info">{formatPercentage(fund.expenseRatio)}</div>
+                  <div className="font-bold text-info">
+                    {formatPercentage(fund.expenseRatio)}
+                  </div>
                 </div>
               </div>
             ))}
@@ -77,4 +79,4 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
   );
 };
 
-export default StatisticsPanel; 
+export default StatisticsPanel;

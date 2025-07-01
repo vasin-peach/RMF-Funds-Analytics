@@ -1,6 +1,6 @@
 import React from 'react';
 import { FilterOption, SortOption } from '../types/rmf';
-import { Search, Filter, SortAsc, SortDesc, X } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 
 interface FilterPanelProps {
   filters: FilterOption;
@@ -19,22 +19,34 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   onSortChange,
   categories,
   companies,
-  risks
+  risks,
 }) => {
   const sortOptions: SortOption[] = [
     { label: 'Best Value', value: 'expenseRatio', direction: 'desc' },
     { label: '1Y Return (Highest)', value: 'return1Y', direction: 'desc' },
     { label: '3Y Return (Highest)', value: 'return3Y', direction: 'desc' },
     { label: '5Y Return (Highest)', value: 'return5Y', direction: 'desc' },
-    { label: 'Expense Ratio (Lowest)', value: 'expenseRatio', direction: 'asc' },
-    { label: 'Management Fee (Lowest)', value: 'managementFee', direction: 'asc' },
+    {
+      label: 'Expense Ratio (Lowest)',
+      value: 'expenseRatio',
+      direction: 'asc',
+    },
+    {
+      label: 'Management Fee (Lowest)',
+      value: 'managementFee',
+      direction: 'asc',
+    },
     { label: 'Fund Size (Largest)', value: 'fundSize', direction: 'desc' },
     { label: 'Fund Size (Smallest)', value: 'fundSize', direction: 'asc' },
     { label: 'Risk (Lowest)', value: 'risk', direction: 'asc' },
     { label: 'Risk (Highest)', value: 'risk', direction: 'desc' },
-    { label: 'Min Investment (Lowest)', value: 'minInvestment', direction: 'asc' },
+    {
+      label: 'Min Investment (Lowest)',
+      value: 'minInvestment',
+      direction: 'asc',
+    },
     { label: 'Fund Name (A-Z)', value: 'name', direction: 'asc' },
-    { label: 'Company (A-Z)', value: 'company', direction: 'asc' }
+    { label: 'Company (A-Z)', value: 'company', direction: 'asc' },
   ];
 
   const hasActiveFilters = Object.keys(filters).length > 0;
@@ -64,52 +76,81 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Category Filter */}
           <div className="flex flex-col">
-            <label className="text-xs font-medium text-gray-600 mb-1">Fund Category</label>
+            <label className="text-xs font-medium text-gray-600 mb-1">
+              Fund Category
+            </label>
             <select
               className="select select-sm select-bordered w-full bg-white border-gray-200 text-xs"
               value={filters.category || ''}
-              onChange={(e) => onFiltersChange({ ...filters, category: e.target.value || undefined })}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  category: e.target.value || undefined,
+                })
+              }
             >
               <option value="">All Categories</option>
               {categories.map((category, index) => (
-                <option key={`category-${index}-${category}`} value={category}>{category}</option>
+                <option key={`category-${index}-${category}`} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Company Filter */}
           <div className="flex flex-col">
-            <label className="text-xs font-medium text-gray-600 mb-1">Asset Management</label>
+            <label className="text-xs font-medium text-gray-600 mb-1">
+              Asset Management
+            </label>
             <select
               className="select select-sm select-bordered w-full bg-white border-gray-200 text-xs"
               value={filters.company || ''}
-              onChange={(e) => onFiltersChange({ ...filters, company: e.target.value || undefined })}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  company: e.target.value || undefined,
+                })
+              }
             >
               <option value="">All Companies</option>
               {companies.map((company, index) => (
-                <option key={`company-${index}-${company}`} value={company}>{company}</option>
+                <option key={`company-${index}-${company}`} value={company}>
+                  {company}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Risk Filter */}
           <div className="flex flex-col">
-            <label className="text-xs font-medium text-gray-600 mb-1">Risk Level</label>
+            <label className="text-xs font-medium text-gray-600 mb-1">
+              Risk Level
+            </label>
             <select
               className="select select-sm select-bordered w-full bg-white border-gray-200 text-xs"
               value={filters.risk || ''}
-              onChange={(e) => onFiltersChange({ ...filters, risk: e.target.value || undefined })}
+              onChange={(e) =>
+                onFiltersChange({
+                  ...filters,
+                  risk: e.target.value || undefined,
+                })
+              }
             >
               <option value="">All Risk Levels</option>
               {risks.map((risk, index) => (
-                <option key={`risk-${index}-${risk}`} value={risk}>{risk}</option>
+                <option key={`risk-${index}-${risk}`} value={risk}>
+                  {risk}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Search */}
           <div className="flex flex-col">
-            <label className="text-xs font-medium text-gray-600 mb-1">Search</label>
+            <label className="text-xs font-medium text-gray-600 mb-1">
+              Search
+            </label>
             <div className="relative">
               <input
                 type="text"
@@ -126,13 +167,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
       {/* Sort Section */}
       <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-        <div className="text-xs font-semibold text-gray-700 mb-3">Sort Options</div>
+        <div className="text-xs font-semibold text-gray-700 mb-3">
+          Sort Options
+        </div>
         <div className="flex flex-wrap gap-2">
           {sortOptions.map((option) => (
             <button
               key={`${option.value}-${option.direction}`}
               className={`btn btn-xs ${
-                sortOption.value === option.value && sortOption.direction === option.direction
+                sortOption.value === option.value &&
+                sortOption.direction === option.direction
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
               } border font-medium`}
@@ -147,4 +191,4 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   );
 };
 
-export default FilterPanel; 
+export default FilterPanel;
