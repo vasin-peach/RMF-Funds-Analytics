@@ -2,19 +2,15 @@ import { RMFData } from '../types/rmf';
 
 // ฟังก์ชันสำหรับตรวจสอบว่ากองทุนเป็น RMF หรือไม่
 const isRMF = (rawFund: any): boolean => {
-  // ตรวจสอบจาก taxAllowance
-  if (rawFund.taxAllowance === 'RMF') {
+  // ตรวจสอบทั้ง root และ overviewInfo
+  if (rawFund.taxAllowance === 'RMF' || rawFund.overviewInfo?.taxAllowance === 'RMF') {
     return true;
   }
-  
-  // ตรวจสอบจากชื่อกองทุน (backup)
   const name = (rawFund.overviewInfo?.name || '').toLowerCase();
   const symbol = (rawFund.overviewInfo?.symbol || '').toLowerCase();
-  
   if (name.includes('rmf') || symbol.includes('rmf')) {
     return true;
   }
-  
   return false;
 };
 
@@ -234,14 +230,12 @@ export const loadRMFData = async (): Promise<RMFData[]> => {
           name: fund.overviewInfo?.name,
           symbol: fund.overviewInfo?.symbol,
           taxAllowance: fund.taxAllowance,
+          overviewTax: fund.overviewInfo?.taxAllowance,
           isRMF: isRMF(fund)
         });
       });
-      
-      // Fallback: ถ้าไม่พบ RMF ให้ใช้กองทุนทั้งหมด
-      console.log('Using all funds as fallback...');
-      const funds = rawFunds.map(transformFundData);
-      return funds;
+      // ไม่ใช้ fallback อีกต่อไป
+      return [];
     }
 
     // แปลงข้อมูลให้ตรงกับ interface
@@ -261,9 +255,30 @@ export const loadRMFData = async (): Promise<RMFData[]> => {
 
 // ฟังก์ชันสำหรับดึงข้อมูล unique values สำหรับ filters
 export const getUniqueValues = (funds: RMFData[]) => {
-  const categories = [...new Set(funds.map((fund) => fund.category))];
-  const companies = [...new Set(funds.map((fund) => fund.company))];
-  const risks = [...new Set(funds.map((fund) => fund.risk))];
+  // ดึงหมวดหมู่ที่มีอยู่จริงและเรียงลำดับ
+  const categories = [...new Set(funds.map((fund) => fund.category))].sort();
+  
+  // ดึงบริษัทที่มีอยู่จริงและเรียงลำดับ
+  const companies = [...new Set(funds.map((fund) => fund.company))].sort();
+  
+  // ดึงระดับความเสี่ยงที่มีอยู่จริงและเรียงลำดับตามความเสี่ยง
+  const riskOrder = ['Low', 'Low to Moderate', 'Moderate', 'Moderate to High', 'High'];
+  const risks = [...new Set(funds.map((fund) => fund.risk))].sort((a, b) => {
+    return riskOrder.indexOf(a) - riskOrder.indexOf(b);
+  });
+
+  // เพิ่มสถิติ
+  console.log('Available categories:', categories);
+  console.log('Available companies:', companies.length);
+  console.log('Available risk levels:', risks);
+
+  // แสดงสถิติของแต่ละหมวดหมู่
+  const categoryStats = categories.map(category => {
+    const count = funds.filter(fund => fund.category === category).length;
+    return { category, count };
+  }).sort((a, b) => b.count - a.count);
+  
+  console.log('Category statistics:', categoryStats);
 
   return { categories, companies, risks };
 };

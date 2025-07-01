@@ -243,3 +243,36 @@ export const getReturnColor = (returnValue: number): string => {
   if (returnValue < 0) return 'text-red-600';
   return 'text-gray-600';
 };
+
+// แปลงชื่อหมวดหมู่ RMF เป็นภาษาอังกฤษ
+export const mapCategoryToEnglish = (category: string): string => {
+  const mapping: Record<string, string> = {
+    'กองทุนรวมผสม': 'Mixed Fund',
+    'กองทุนรวมยืดหยุ่น': 'Flexible Fund',
+    'กองทุนรวมเพื่อการเลี้ยงชีพ': 'Retirement Mutual Fund',
+    'การเงิน': 'Financial',
+    'ตราสารหนี้': 'Fixed Income',
+    'ตลาดเงิน': 'Money Market',
+    'สินค้าโภคภัณฑ์': 'Commodity',
+    'สุขภาพ': 'Healthcare',
+    'หุ้นจีน': 'China Equity',
+    'หุ้นญี่ปุ่น': 'Japan Equity',
+    'หุ้นต่างประเทศ': 'Foreign Equity',
+    'หุ้นไทย': 'Thai Equity',
+    'หุ้นสหรัฐอเมริกา': 'US Equity',
+    'หุ้นยุโรป': 'Europe Equity',
+    'หุ้นตลาดเกิดใหม่': 'Emerging Markets',
+    'อสังหาริมทรัพย์': 'Property',
+    'เทคโนโลยี': 'Technology',
+    'โครงสร้างพื้นฐาน': 'Infrastructure',
+    'REIT': 'REIT',
+    'บริโภค': 'Consumer',
+    'พลังงาน': 'Energy',
+    'กองทุนรวมตลาดเงิน': 'Money Market',
+    'กองทุนรวมตราสารหนี้': 'Fixed Income',
+    'กองทุนรวมผสมหุ้นและตราสารหนี้': 'Mixed Fund',
+    // fallback
+    'Other': 'Other',
+  };
+  return mapping[category] || category;
+};

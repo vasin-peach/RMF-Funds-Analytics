@@ -1,6 +1,7 @@
 import React from 'react';
 import { FilterOption, SortOption } from '../types/rmf';
 import { Search, Filter, X } from 'lucide-react';
+import { mapCategoryToEnglish } from '../utils/rmfUtils';
 
 interface FilterPanelProps {
   filters: FilterOption;
@@ -92,7 +93,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               <option value="">All Categories</option>
               {categories.map((category, index) => (
                 <option key={`category-${index}-${category}`} value={category}>
-                  {category}
+                  {mapCategoryToEnglish(category)}
                 </option>
               ))}
             </select>
