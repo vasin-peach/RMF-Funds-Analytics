@@ -19,7 +19,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterOption>({});
   const [sortOption, setSortOption] = useState<SortOption>({
-    label: 'ความคุ้มค่า (สูงสุด)',
+    label: 'Best Value',
     value: 'expenseRatio',
     direction: 'desc',
   });
@@ -67,9 +67,11 @@ function App() {
     return () => clearTimeout(timer);
   }, [funds, filters, sortOption]);
 
-  // Turn off value ranking only when sort option changes
+  // Turn off value ranking only when sort option changes (but not for Best Value)
   useEffect(() => {
-    setShowValueRanking(false);
+    if (sortOption.label !== 'Best Value') {
+      setShowValueRanking(false);
+    }
   }, [sortOption]);
 
   // Memoize valueScore and radar data for all filteredFunds
@@ -223,7 +225,7 @@ function App() {
       <div className="min-h-screen bg-base-200 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-lg">กำลังโหลดข้อมูลกองทุน RMF...</p>
+          <p className="text-lg">Loading RMF data...</p>
         </div>
       </div>
     );
