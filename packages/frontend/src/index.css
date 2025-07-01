@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Kanit', 'Noto Sans Thai', system-ui, sans-serif;
+  }
+}
+
+body {
+  font-family: 'Inter', 'Prompt', sans-serif;
+  background-color: #f5f6fa;
+} 
