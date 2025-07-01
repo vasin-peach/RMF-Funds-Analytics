@@ -49,7 +49,7 @@ const transformFundData = (rawFund: any): RMFData => {
 
 
   // ฟังก์ชันวิเคราะห์หมวดหมู่กองทุน RMF จากชื่อ
-  function inferCategory(name: string, symbol: string): string {
+  function inferCategory(name: string): string {
     const n = (name || '').toLowerCase();
 
     // หมวดหมู่หลักของ RMF ตามประกาศ ก.ล.ต.
@@ -177,7 +177,7 @@ const transformFundData = (rawFund: any): RMFData => {
     return3Y: parseFloat(performance.threeYearPercentChange) || 0,
     return5Y: parseFloat(performance.fiveYearPercentChange) || 0,
     risk: getRiskText(overview.riskLevel),
-    category: inferCategory(overview.name, overview.symbol),
+    category: inferCategory(overview.name),
     minInvestment: 1000, // ค่าเริ่มต้น
     managementFee: managementFee,
     trusteeFee: trusteeFee,

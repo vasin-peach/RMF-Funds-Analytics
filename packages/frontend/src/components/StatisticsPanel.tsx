@@ -124,32 +124,7 @@ const StatisticsPanel: React.FC<StatisticsPanelProps> = ({ funds }) => {
     rec => rec.age === selectedAge && rec.riskLevel === selectedRisk
   ) || assetAllocationRecommendations[0];
 
-  // หากองทุนที่แนะนำตาม asset allocation
-  const getRecommendedFunds = () => {
-    const equityFunds = funds.filter(fund => 
-      fund.category === 'หุ้น' && fund.risk === 'Moderate to High'
-    ).slice(0, 3);
-    
-    const fixedIncomeFunds = funds.filter(fund => 
-      fund.category === 'ตราสารหนี้' && fund.risk === 'Low to Moderate'
-    ).slice(0, 3);
-    
-    const moneyMarketFunds = funds.filter(fund => 
-      fund.category === 'ตลาดเงิน' && fund.risk === 'Low'
-    ).slice(0, 2);
 
-    const mixedFunds = funds.filter(fund => 
-      fund.category === 'ผสม' && fund.risk === 'Moderate'
-    ).slice(0, 2);
-
-    const flexibleFunds = funds.filter(fund => 
-      fund.category === 'ยืดหยุ่น' && fund.risk === 'Moderate to High'
-    ).slice(0, 2);
-
-    return { equityFunds, fixedIncomeFunds, moneyMarketFunds, mixedFunds, flexibleFunds };
-  };
-
-  const recommendedFunds = getRecommendedFunds();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
