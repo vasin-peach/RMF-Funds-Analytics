@@ -46,10 +46,11 @@ const transformFundData = (rawFund: any): RMFData => {
   const trusteeFee = parseFloat(fee.actualTrusteeFee) || 0;
   const totalExpenseRatio = managementFee + trusteeFee;
 
+
+
   // ฟังก์ชันวิเคราะห์หมวดหมู่กองทุน RMF จากชื่อ
   function inferCategory(name: string, symbol: string): string {
     const n = (name || '').toLowerCase();
-    const s = (symbol || '').toLowerCase();
 
     // หมวดหมู่หลักของ RMF ตามประกาศ ก.ล.ต.
     
@@ -159,7 +160,7 @@ const transformFundData = (rawFund: any): RMFData => {
     }
     
     // Default สำหรับ RMF ที่ไม่สามารถระบุหมวดหมู่ได้
-    return 'กองทุนรวมเพื่อการเลี้ยงชีพ';
+    return 'อื่นๆ';
   }
 
   return {
@@ -255,8 +256,10 @@ export const loadRMFData = async (): Promise<RMFData[]> => {
 
 // ฟังก์ชันสำหรับดึงข้อมูล unique values สำหรับ filters
 export const getUniqueValues = (funds: RMFData[]) => {
-  // ดึงหมวดหมู่ที่มีอยู่จริงและเรียงลำดับ
-  const categories = [...new Set(funds.map((fund) => fund.category))].sort();
+  // ดึงหมวดหมู่ที่มีอยู่จริงและเรียงลำดับ (ไม่รวม "อื่นๆ")
+  const categories = [...new Set(funds.map((fund) => fund.category))]
+    .filter(category => category !== 'อื่นๆ')
+    .sort();
   
   // ดึงบริษัทที่มีอยู่จริงและเรียงลำดับ
   const companies = [...new Set(funds.map((fund) => fund.company))].sort();
@@ -280,5 +283,9 @@ export const getUniqueValues = (funds: RMFData[]) => {
   
   console.log('Category statistics:', categoryStats);
 
-  return { categories, companies, risks };
+  return { 
+    categories, 
+    companies, 
+    risks
+  };
 };

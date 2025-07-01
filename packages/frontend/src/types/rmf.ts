@@ -10,7 +10,7 @@ export interface RMFData {
   return3Y: number;
   return5Y: number;
   risk: 'Low' | 'Low to Moderate' | 'Moderate' | 'Moderate to High' | 'High';
-  category: string;
+  category: string; // หมวดหมู่หลัก (หุ้นไทย, ตราสารหนี้, กองทุนรวมผสม, ฯลฯ)
   minInvestment: number;
   managementFee: number;
   trusteeFee: number;

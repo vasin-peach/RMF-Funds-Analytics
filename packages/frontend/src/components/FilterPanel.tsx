@@ -74,7 +74,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {/* Filter Section */}
       <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 mb-4">
         <div className="text-xs font-semibold text-gray-700 mb-3">Filters</div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {/* Category Filter */}
           <div className="flex flex-col">
             <label className="text-xs font-medium text-gray-600 mb-1">
@@ -91,13 +91,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
               }
             >
               <option value="">All Categories</option>
-              {categories.map((category, index) => (
-                <option key={`category-${index}-${category}`} value={category}>
-                  {mapCategoryToEnglish(category)}
-                </option>
-              ))}
+              {categories
+                .filter(category => category !== 'อื่นๆ')
+                .map((category, index) => (
+                  <option key={`category-${index}-${category}`} value={category}>
+                    {mapCategoryToEnglish(category)}
+                  </option>
+                ))}
             </select>
           </div>
+
+
 
           {/* Company Filter */}
           <div className="flex flex-col">

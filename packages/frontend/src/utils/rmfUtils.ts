@@ -249,7 +249,6 @@ export const mapCategoryToEnglish = (category: string): string => {
   const mapping: Record<string, string> = {
     'กองทุนรวมผสม': 'Mixed Fund',
     'กองทุนรวมยืดหยุ่น': 'Flexible Fund',
-    'กองทุนรวมเพื่อการเลี้ยงชีพ': 'Retirement Mutual Fund',
     'การเงิน': 'Financial',
     'ตราสารหนี้': 'Fixed Income',
     'ตลาดเงิน': 'Money Market',
@@ -271,6 +270,7 @@ export const mapCategoryToEnglish = (category: string): string => {
     'กองทุนรวมตลาดเงิน': 'Money Market',
     'กองทุนรวมตราสารหนี้': 'Fixed Income',
     'กองทุนรวมผสมหุ้นและตราสารหนี้': 'Mixed Fund',
+    'อื่นๆ': 'Other',
     // fallback
     'Other': 'Other',
   };

@@ -6,6 +6,7 @@ import {
   formatFundSize,
   getRiskColor,
   getReturnColor,
+  mapCategoryToEnglish,
 } from '../utils/rmfUtils';
 import { TrendingUp, TrendingDown, Minus, Star } from 'lucide-react';
 import { Radar } from 'react-chartjs-2';
@@ -192,11 +193,32 @@ const RMFCard: React.FC<RMFCardProps> = ({
                 Size: {formatFundSize(fund.fundSize)}
               </span>
             </div>
-            {/* Category badge */}
-            <div className="mt-2">
-              <span className="badge badge-outline text-xs px-2 py-1 border-gray-300 text-gray-600">
-                {fund.category}
+            {/* RMF Category badges */}
+            <div className="mt-2 flex flex-wrap gap-1">
+              {/* RMF Badge - Always show since this is RMF only */}
+              <span className="badge text-xs px-2 py-1 bg-blue-100 text-blue-800 border-blue-300">
+                RMF
               </span>
+              
+              {/* Category Badge */}
+              <span className={`badge text-xs px-2 py-1 ${
+                fund.category === 'หุ้น' ? 'bg-red-100 text-red-800 border-red-300' :
+                fund.category === 'ตราสารหนี้' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                fund.category === 'ตลาดเงิน' ? 'bg-green-100 text-green-800 border-green-300' :
+                fund.category === 'ผสม' ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                fund.category === 'ยืดหยุ่น' ? 'bg-indigo-100 text-indigo-800 border-indigo-300' :
+                fund.category === 'อสังหาริมทรัพย์' ? 'bg-pink-100 text-pink-800 border-pink-300' :
+                'bg-gray-100 text-gray-800 border-gray-300'
+              }`}>
+                {mapCategoryToEnglish(fund.category)}
+              </span>
+              
+              {/* Category Badge - More specific RMF category (skip if "อื่นๆ") */}
+              {fund.category !== 'อื่นๆ' && (
+                <span className="badge badge-outline text-xs px-2 py-1 border-gray-300 text-gray-600">
+                  {fund.category}
+                </span>
+              )}
             </div>
           </div>
         </div>
